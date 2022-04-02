@@ -1,8 +1,8 @@
 # gRpc-PubSub
-
 .Net pub/sub library
 
 ## Example
+Simple example for Local PubSub implementation.
 ```c#
 [Test]
 public async Task Test()
@@ -21,4 +21,8 @@ public async Task Test()
         await scope.Publish("Scoped 2 -- will never be committed.");
     }
 }
+
+//! Results:
+// Received: Hello world
+// Received: Scoped 1
 ```
