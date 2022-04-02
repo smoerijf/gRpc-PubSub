@@ -16,7 +16,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         using (var scope = ps.CreateScope())
         {
@@ -32,7 +32,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         using (var scope = ps.CreateScope())
         {
@@ -52,7 +52,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         using (var scope = ps.CreateScope())
         {
@@ -72,7 +72,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         using (var scope = ps.CreateScope())
         {
@@ -93,7 +93,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         await ps.Publish(new TestData { Id = 1 }, channel);
         using (var scope = ps.CreateScope())
@@ -115,7 +115,7 @@ public class ScopedPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         using (var scope = ps.CreateScope())
         {

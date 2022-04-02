@@ -14,17 +14,24 @@ namespace PubSub.Local.Test
         {
             IPubSub pubSub = new LocalPubSub();
 
-            await pubSub.Subscribe<string>(d => Console.WriteLine($"Received: {d}"));
+            await pubSub.Subscribe<Data>((ch, d) => Console.WriteLine($"Received[{ch}]: {d.Value}"));
 
-            await pubSub.Publish("Hello world");
+            await pubSub.Publish(new Data("Hello world"));
 
             using (var scope = pubSub.CreateScope())
             {
-                await scope.Publish("Scoped 1");
+                await scope.Publish(new Data("Scoped 1"));
                 await scope.Commit();
 
-                await scope.Publish("Scoped 2 -- will never be committed.");
+                await scope.Publish(new Data("Scoped 2 -- will never be committed."));
             }
+        }
+
+        public class Data : IEventData
+        {
+            public string Value { get; set; }
+
+            public Data(string value) => this.Value = value;
         }
     }
 }

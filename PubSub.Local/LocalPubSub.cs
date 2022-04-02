@@ -10,34 +10,35 @@ namespace PubSub.Local
 {
     public class LocalPubSub : IPubSub
     {
-        private readonly ConcurrentDictionary<(string channel, Type evenDataType), List<ISubscriber>> subscribers = new();
+        private readonly ConcurrentDictionary<(string channel, Type evenDataType), List<ISubscription>> subscriptions = new();
 
-        public Task Publish<T>(T eventData, string channel, CancellationToken token)
+        public Task Publish<T>(T eventData, string channel, CancellationToken token) where T : IEventData
         {
-            if (!token.IsCancellationRequested && this.subscribers.TryGetValue((channel, eventData.GetType()), out var subs))
+            if (!token.IsCancellationRequested && this.subscriptions.TryGetValue((channel, eventData.GetType()), out var subs))
             {
-                List<ISubscriber> copy;
+                List<ISubscription> copy;
                 lock (subs)
                 {
                     copy = subs.ToList();
                 }
 
-                var tasks = copy.Select(sub => sub.DoInvoke(eventData, token));
+                var tasks = copy.Select(sub => sub.DoInvoke(eventData, channel, token));
                 return Task.WhenAll(tasks);
             }
             return Task.CompletedTask;
         }
 
-        public Task<ISubscriber<T>> Subscribe<T>(Action<T> callback, string channel, CancellationToken token)
+        public Task<ISubscription<T>> Subscribe<T>(Action<string, T> callback, string channel, CancellationToken token) where T : IEventData
         {
-            ISubscriber<T> sub = null;
+            ISubscription<T> sub = null;
             if (!token.IsCancellationRequested)
             {
-                var subs = this.subscribers.GetOrAdd((channel, typeof(T)), _ => new List<ISubscriber>());
-                ISubscriber<T> subscriber = new Subscriber<T>(channel);
+                var dataType = typeof(T);
+                var subs = this.subscriptions.GetOrAdd((channel, dataType), _ => new List<ISubscription>());
+                ISubscription<T> subscriber = new Subscription<T>(channel, dataType);
                 if (callback != null)
                 {
-                    subscriber.Event += d => callback(d);
+                    subscriber.Event += (ch, d) => callback(ch, d);
                 }
                 lock (subs)
                 {
@@ -51,9 +52,9 @@ namespace PubSub.Local
             return Task.FromResult(sub);
         }
 
-        public Task<bool> UnSubscribe(ISubscriber subscriber, CancellationToken token)
+        public Task<bool> UnSubscribe(ISubscription subscriber, CancellationToken token)
         {
-            if (!token.IsCancellationRequested && this.subscribers.TryGetValue((subscriber.Channel, subscriber.DataType), out var subs))
+            if (!token.IsCancellationRequested && this.subscriptions.TryGetValue((subscriber.Channel, subscriber.DataType), out var subs))
             {
                 bool removedSub;
                 subscriber.ClearListeners();

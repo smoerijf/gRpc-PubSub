@@ -15,7 +15,7 @@ public class LocalPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         await ps.Publish(new TestData { Id = 2 }, channel);
         await ps.Publish(new TestData2 { Id = 3 }, channel);
@@ -32,7 +32,7 @@ public class LocalPubSubTests
         var received = new List<int>();
 
         var sub = await ps.Subscribe<TestData>(null, channel);
-        sub.Event += d => received.Add(d.Id);
+        sub.Event += (_, d) => received.Add(d.Id);
         await ps.Publish(new TestData { Id = 2 }, channel);
         await ps.UnSubscribe(sub);
         await ps.Publish(new TestData { Id = 3 }, channel);
@@ -47,7 +47,7 @@ public class LocalPubSubTests
     {
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
-        void fn(TestData d) => received.Add(d.Id);
+        void fn(string ch, TestData d) => received.Add(d.Id);
 
         var sub = await ps.Subscribe<TestData>(fn, channel);
         await ps.Publish(new TestData { Id = 2 }, channel);
@@ -65,7 +65,7 @@ public class LocalPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        var sub = await ps.Subscribe<TestData>(d => received.Add(d.Id), channel, new CancellationToken(canceled));
+        var sub = await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel, new CancellationToken(canceled));
 
         await ps.Publish(new TestData { Id = 2 }, channel);
 
@@ -87,7 +87,7 @@ public class LocalPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         await ps.Publish(new TestData { Id = 2 }, channel);
         await ps.Publish(new TestData { Id = 3 }, channel, new CancellationToken(canceled));
@@ -103,7 +103,7 @@ public class LocalPubSubTests
         IPubSub ps = new LocalPubSub();
         var received = new List<int>();
 
-        var sub = await ps.Subscribe<TestData>(d => received.Add(d.Id), channel);
+        var sub = await ps.Subscribe<TestData>((ch, d) => received.Add(d.Id), channel);
 
         await ps.Publish(new TestData { Id = 2 }, channel);
         await ps.UnSubscribe(sub, new CancellationToken(canceled));
