@@ -2,14 +2,13 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using PubSub.Api;
 
-namespace PubSub.Local
+namespace PubSub.Api
 {
     internal class ScopedPublisher : IScopedPublisher
     {
         private readonly IPubSub owner;
-        private readonly ConcurrentBag<(IEventData eventData, string channel)> queue = new();
+        private readonly ConcurrentBag<(object eventData, string channel)> queue = new();
         private bool isDisposed = false;
 
         public ScopedPublisher(IPubSub owner)
@@ -17,7 +16,7 @@ namespace PubSub.Local
             this.owner = owner;
         }
 
-        public Task Publish<T>(T eventData, string channel, CancellationToken token) where T : IEventData
+        public Task Publish<T>(T eventData, string channel, CancellationToken token)
         {
             if (this.isDisposed)
             {

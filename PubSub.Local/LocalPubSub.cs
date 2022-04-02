@@ -10,9 +10,9 @@ namespace PubSub.Local
 {
     public class LocalPubSub : IPubSub
     {
-        private readonly ConcurrentDictionary<(string, Type), List<ISubscriber>> subscribers = new();
+        private readonly ConcurrentDictionary<(string channel, Type evenDataType), List<ISubscriber>> subscribers = new();
 
-        public async Task Publish<T>(T eventData, string channel, CancellationToken token) where T : IEventData
+        public Task Publish<T>(T eventData, string channel, CancellationToken token)
         {
             if (!token.IsCancellationRequested && this.subscribers.TryGetValue((channel, eventData.GetType()), out var subs))
             {
@@ -21,14 +21,14 @@ namespace PubSub.Local
                 {
                     copy = subs.ToList();
                 }
-                foreach (var sub in copy.TakeWhile(_ => !token.IsCancellationRequested))
-                {
-                    await sub.DoInvoke(eventData, token);
-                }
+
+                var tasks = copy.Select(sub => sub.DoInvoke(eventData, token));
+                return Task.WhenAll(tasks);
             }
+            return Task.CompletedTask;
         }
 
-        public Task<ISubscriber<T>> Subscribe<T>(Action<T> callback, string channel, CancellationToken token) where T : IEventData
+        public Task<ISubscriber<T>> Subscribe<T>(Action<T> callback, string channel, CancellationToken token)
         {
             ISubscriber<T> sub = null;
             if (!token.IsCancellationRequested)
@@ -55,11 +55,13 @@ namespace PubSub.Local
         {
             if (!token.IsCancellationRequested && this.subscribers.TryGetValue((subscriber.Channel, subscriber.DataType), out var subs))
             {
+                bool removedSub;
+                subscriber.ClearListeners();
                 lock (subs)
                 {
-                    subscriber.ClearListeners();
-                    return Task.FromResult(subs.Remove(subscriber));
+                    removedSub = subs.Remove(subscriber);
                 }
+                return Task.FromResult(removedSub);
             }
             return Task.FromResult(false);
         }

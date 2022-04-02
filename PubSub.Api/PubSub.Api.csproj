@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<InternalsVisibleTo Include="PubSub.Grpc" />
 	<InternalsVisibleTo Include="PubSub.Local" />
   </ItemGroup>
 
