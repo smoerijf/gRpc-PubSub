@@ -1,48 +1,28 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PubSub.Api
 {
-    public interface IPubSub
+    public interface IPublisher
     {
-        void Publish<T>(T eventData, string channel = null) where T : IEventData;
-        ISubscriber<T> Subscribe<T>(Action<T> callback = null, string channel = null) where T : IEventData;
-        bool UnSubscribe(ISubscriber callback);
+        Task Publish<T>(T eventData, string channel = null, CancellationToken token = default) where T : IEventData;
     }
 
-    public interface ISubscriber
+    public interface IScopedPublisher : IPublisher, IDisposable
     {
-        Type DataType { get; }
-        string Channel { get; }
-
-        void DoInvoke(object eventData);
-        void ClearListeners();
+        Task Commit(CancellationToken token = default);
     }
 
-    public delegate void EventData<in T>(T eventData);
-
-    public interface ISubscriber<T> : ISubscriber where T : IEventData
+    public interface IPubSub : IPublisher
     {
-        event EventData<T> Event;
-        void DoInvoke(T eventData);
+        Task<ISubscriber<T>> Subscribe<T>(Action<T> callback = null, string channel = null, CancellationToken token = default) where T : IEventData;
+
+        Task<bool> UnSubscribe(ISubscriber callback, CancellationToken token = default);
+
+        IScopedPublisher CreateScope();
     }
-
-    internal class Subscriber<T> : ISubscriber<T> where T : IEventData
-    {
-        public event EventData<T> Event;
-
-        public Type DataType { get; }
-        public string Channel { get; }
-
-        public Subscriber(string channel)
-        {
-            this.DataType = typeof(T);
-            this.Channel = channel;
-        }
-        public void DoInvoke(object eventData) => this.DoInvoke((T)eventData);
-        public void DoInvoke(T eventData) => this.Event?.Invoke(eventData);
-        public void ClearListeners() => this.Event = null;
-    }
-
+    
     public interface IEventData
     {
     }

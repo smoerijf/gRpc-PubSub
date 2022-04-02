@@ -3,19 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client1", "Client1\Client1.csproj", "{B578B8E8-5927-4314-9AE1-4290AE01326E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client1", "Demo\Client1\Client1.csproj", "{B578B8E8-5927-4314-9AE1-4290AE01326E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client2", "Client2\Client2.csproj", "{91F1104C-7B24-425F-BE9F-51D0F5C5751B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client2", "Demo\Client2\Client2.csproj", "{91F1104C-7B24-425F-BE9F-51D0F5C5751B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PubSub.Api", "PubSub.Api\PubSub.Api.csproj", "{9CF6DBB7-9820-488A-BF6A-21090461B2AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PubSub.Grpc", "PubSub.Grpc\PubSub.Grpc.csproj", "{1E19D840-0599-4E80-9B2E-6036D0F47204}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PubSub.Test", "PubSub.Test\PubSub.Test.csproj", "{E1E22238-627E-4915-9A33-6022BFD0DA3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PubSub.Local.Test", "PubSub.Local.Test\PubSub.Local.Test.csproj", "{E1E22238-627E-4915-9A33-6022BFD0DA3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PubSub.Local", "PubSub.Local\PubSub.Local.csproj", "{D7922EEF-A930-40DE-B5F4-50854F4A1375}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client.Shared", "Client.Shared\Client.Shared.csproj", "{0579DD9F-24FB-4229-BE93-887F216FDDDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client.Shared", "Demo\Client.Shared\Client.Shared.csproj", "{0579DD9F-24FB-4229-BE93-887F216FDDDF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{8AD3360F-4FC4-4546-8A69-2AF006184172}"
 EndProject

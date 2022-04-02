@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using PubSub.Api;
 
 namespace PubSub.Local
@@ -10,48 +12,61 @@ namespace PubSub.Local
     {
         private readonly ConcurrentDictionary<(string, Type), List<ISubscriber>> subscribers = new();
 
-        public void Publish<T>(T eventData, string channel) where T : IEventData
+        public async Task Publish<T>(T eventData, string channel, CancellationToken token) where T : IEventData
         {
-            if (this.subscribers.TryGetValue((channel, typeof(T)), out var subs))
+            if (!token.IsCancellationRequested && this.subscribers.TryGetValue((channel, eventData.GetType()), out var subs))
             {
                 List<ISubscriber> copy;
                 lock (subs)
                 {
                     copy = subs.ToList();
                 }
-                foreach (var sub in copy)
+                foreach (var sub in copy.TakeWhile(_ => !token.IsCancellationRequested))
                 {
-                    sub.DoInvoke(eventData);
+                    await sub.DoInvoke(eventData, token);
                 }
             }
         }
 
-        public ISubscriber<T> Subscribe<T>(Action<T> callback, string channel) where T : IEventData
+        public Task<ISubscriber<T>> Subscribe<T>(Action<T> callback, string channel, CancellationToken token) where T : IEventData
         {
-            var subs = this.subscribers.GetOrAdd((channel, typeof(T)), _ => new List<ISubscriber>());
-            var sub = new Subscriber<T>(channel);
-            if (callback != null)
+            ISubscriber<T> sub = null;
+            if (!token.IsCancellationRequested)
             {
-                sub.Event += d => callback(d);
+                var subs = this.subscribers.GetOrAdd((channel, typeof(T)), _ => new List<ISubscriber>());
+                ISubscriber<T> subscriber = new Subscriber<T>(channel);
+                if (callback != null)
+                {
+                    subscriber.Event += d => callback(d);
+                }
+                lock (subs)
+                {
+                    if (!token.IsCancellationRequested)
+                    {
+                        subs.Add(subscriber);
+                        sub = subscriber;
+                    }
+                }
             }
-            lock (subs)
-            {
-                subs.Add(sub);
-            }
-            return sub;
+            return Task.FromResult(sub);
         }
 
-        public bool UnSubscribe(ISubscriber subscriber)
+        public Task<bool> UnSubscribe(ISubscriber subscriber, CancellationToken token)
         {
-            if (this.subscribers.TryGetValue((subscriber.Channel, subscriber.DataType), out var subs))
+            if (!token.IsCancellationRequested && this.subscribers.TryGetValue((subscriber.Channel, subscriber.DataType), out var subs))
             {
                 lock (subs)
                 {
                     subscriber.ClearListeners();
-                    return subs.Remove(subscriber);
+                    return Task.FromResult(subs.Remove(subscriber));
                 }
             }
-            return false;
+            return Task.FromResult(false);
+        }
+
+        public IScopedPublisher CreateScope()
+        {
+            return new ScopedPublisher(this);
         }
     }
 }
