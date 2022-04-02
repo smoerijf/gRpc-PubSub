@@ -3,10 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using PubSub.Api;
-using PubSub.Local;
 
 namespace PubSub.Local.Test;
 
+[TestFixture]
 public class LocalPubSubTests
 {
     [Test]
